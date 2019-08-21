@@ -103,7 +103,7 @@ func (co *consoleOperator) sync_v400(updatedOperatorConfig *operatorv1.Console, 
 		return oauthErr
 	}
 
-	actualDeployment, depChanged, depErr := co.SyncDeployment(set.Operator, cm, serviceCAConfigMap, sec, rt, set.Proxy, customLogoCanMount)
+	actualDeployment, depChanged, depErr := co.SyncDeployment(set.Operator, cm, serviceCAConfigMap, sec, rt, customLogoCanMount)
 	toUpdate = toUpdate || depChanged
 	co.HandleProgressing(updatedOperatorConfig, "ConsoleDeploymentSync", depErr)
 	if depErr != nil {
@@ -219,8 +219,8 @@ func (co *consoleOperator) SyncConsolePublicConfig(consoleURL string) (*corev1.C
 	return resourceapply.ApplyConfigMap(co.configMapClient, co.recorder, requiredConfigMap)
 }
 
-func (co *consoleOperator) SyncDeployment(operatorConfig *operatorv1.Console, cm *corev1.ConfigMap, serviceCAConfigMap *corev1.ConfigMap, sec *corev1.Secret, rt *routev1.Route, proxyConfig *configv1.Proxy, canMountCustomLogo bool) (*appsv1.Deployment, bool, error) {
-	requiredDeployment := deploymentsub.DefaultDeployment(operatorConfig, cm, serviceCAConfigMap, sec, rt, proxyConfig, canMountCustomLogo)
+func (co *consoleOperator) SyncDeployment(operatorConfig *operatorv1.Console, cm *corev1.ConfigMap, serviceCAConfigMap *corev1.ConfigMap, sec *corev1.Secret, rt *routev1.Route, canMountCustomLogo bool) (*appsv1.Deployment, bool, error) {
+	requiredDeployment := deploymentsub.DefaultDeployment(operatorConfig, cm, serviceCAConfigMap, sec, rt, canMountCustomLogo)
 	expectedGeneration := getDeploymentGeneration(co)
 	genChanged := operatorConfig.ObjectMeta.Generation != operatorConfig.Status.ObservedGeneration
 

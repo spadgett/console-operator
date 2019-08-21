@@ -13,7 +13,6 @@ import (
 	"k8s.io/klog"
 
 	// openshift
-	configv1 "github.com/openshift/api/config/v1"
 	operatorv1 "github.com/openshift/api/operator/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/openshift/console-operator/pkg/api"
@@ -56,7 +55,7 @@ type volumeConfig struct {
 	isConfigMap bool
 }
 
-func DefaultDeployment(operatorConfig *operatorv1.Console, cm *corev1.ConfigMap, serviceCAConfigMap *corev1.ConfigMap, sec *corev1.Secret, rt *routev1.Route, proxyConfig *configv1.Proxy, canMountCustomLogo bool) *appsv1.Deployment {
+func DefaultDeployment(operatorConfig *operatorv1.Console, cm *corev1.ConfigMap, serviceCAConfigMap *corev1.ConfigMap, sec *corev1.Secret, rt *routev1.Route, canMountCustomLogo bool) *appsv1.Deployment {
 	labels := util.LabelsForConsole()
 	meta := util.SharedMeta()
 	meta.Labels = labels
@@ -139,7 +138,7 @@ func DefaultDeployment(operatorConfig *operatorv1.Console, cm *corev1.ConfigMap,
 					TerminationGracePeriodSeconds: &gracePeriod,
 					SecurityContext:               &corev1.PodSecurityContext{},
 					Containers: []corev1.Container{
-						consoleContainer(operatorConfig, volumeConfig, proxyConfig),
+						consoleContainer(operatorConfig, volumeConfig),
 					},
 					Volumes: consoleVolumes(volumeConfig),
 				},
@@ -248,7 +247,7 @@ func withStatusPageFlag(providers operatorv1.ConsoleProviders, flags []string) [
 	return flags
 }
 
-func consoleContainer(cr *operatorv1.Console, volConfigList []volumeConfig, proxyConfig *configv1.Proxy) corev1.Container {
+func consoleContainer(cr *operatorv1.Console, volConfigList []volumeConfig) corev1.Container {
 	volumeMounts := consoleVolumeMounts(volConfigList)
 
 	flags := []string{
@@ -270,7 +269,6 @@ func consoleContainer(cr *operatorv1.Console, volConfigList []volumeConfig, prox
 		//	Name:  publicURLName,
 		//	Value: consoleURL(),
 		//}},
-		Env: setEnvironmentVariables(proxyConfig),
 		Ports: []corev1.ContainerPort{{
 			Name:          consolePortName,
 			Protocol:      corev1.ProtocolTCP,
@@ -287,32 +285,6 @@ func consoleContainer(cr *operatorv1.Console, volConfigList []volumeConfig, prox
 			},
 		},
 	}
-}
-
-func setEnvironmentVariables(proxyConfig *configv1.Proxy) []corev1.EnvVar {
-	envVars := []corev1.EnvVar{}
-	if proxyConfig == nil {
-		return envVars
-	}
-	if len(proxyConfig.Status.HTTPSProxy) != 0 {
-		envVars = append(envVars, corev1.EnvVar{
-			Name:  "HTTPS_PROXY",
-			Value: proxyConfig.Status.HTTPSProxy,
-		})
-	}
-	if len(proxyConfig.Status.HTTPProxy) != 0 {
-		envVars = append(envVars, corev1.EnvVar{
-			Name:  "HTTP_PROXY",
-			Value: proxyConfig.Status.HTTPProxy,
-		})
-	}
-	if len(proxyConfig.Status.NoProxy) != 0 {
-		envVars = append(envVars, corev1.EnvVar{
-			Name:  "NO_PROXY",
-			Value: proxyConfig.Status.NoProxy,
-		})
-	}
-	return envVars
 }
 
 func defaultProbe() *corev1.Probe {
