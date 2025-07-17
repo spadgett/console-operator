@@ -94,6 +94,14 @@ spec:
           imagePullPolicy: IfNotPresent
           terminationMessagePolicy: FallbackToLogsOnError
           image: ${IMAGE}
+          volumeMounts:
+            - name: session-storage
+              mountPath: /tmp/sessions
+      volumes:
+        - name: session-storage
+          emptyDir:
+            sizeLimit: 5Mi
+            medium: Memory
       tolerations:
         - key: node-role.kubernetes.io/master
           operator: Exists

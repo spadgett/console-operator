@@ -23,6 +23,7 @@ import (
 const (
 	consoleConfigYamlFile = "console-config.yaml"
 	defaultLogoutURL      = ""
+	sessionDir            = "/tmp/sessions"
 	pluginProxyEndpoint   = "/api/proxy/plugin/"
 )
 
@@ -84,6 +85,7 @@ func DefaultConfigMap(
 		APIServerURL(apiServerURL).
 		TopologyMode(infrastructureConfig.Status.ControlPlaneTopology).
 		Monitoring(monitoringSharedConfig).
+		SessionDir(sessionDir).
 		Plugins(getPluginsEndpointMap(availablePlugins)).
 		PluginsOrder(operatorConfig).
 		I18nNamespaces(pluginsWithI18nNamespace(availablePlugins)).

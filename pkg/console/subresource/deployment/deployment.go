@@ -87,7 +87,6 @@ func DefaultDeployment(
 	withStrategy(deployment, infrastructureConfig)
 	withConsoleAnnotations(
 		deployment,
-		consoleConfigMap,
 		serviceCAConfigMap,
 		authnCATrustConfigMap,
 		trustedCAConfigMap,
@@ -194,7 +193,6 @@ func withStrategy(deployment *appsv1.Deployment, infrastructureConfig *configv1.
 // version changes.
 func withConsoleAnnotations(
 	deployment *appsv1.Deployment,
-	consoleConfigMap *corev1.ConfigMap,
 	serviceCAConfigMap *corev1.ConfigMap,
 	authServerCAConfigMap *corev1.ConfigMap,
 	trustedCAConfigMap *corev1.ConfigMap,
@@ -204,7 +202,6 @@ func withConsoleAnnotations(
 	infrastructureConfig *configv1.Infrastructure,
 ) {
 	deployment.ObjectMeta.Annotations = map[string]string{
-		configMapResourceVersionAnnotation:            consoleConfigMap.GetResourceVersion(),
 		serviceCAConfigMapResourceVersionAnnotation:   serviceCAConfigMap.GetResourceVersion(),
 		trustedCAConfigMapResourceVersionAnnotation:   trustedCAConfigMap.GetResourceVersion(),
 		proxyConfigResourceVersionAnnotation:          proxyConfig.GetResourceVersion(),
